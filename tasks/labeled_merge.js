@@ -13,6 +13,8 @@ module.exports = function(grunt) {
   // Please see the Grunt documentation for more information regarding task
   // creation: http://gruntjs.com/creating-tasks
 
+    
+
   grunt.registerMultiTask('labeled_merge', 'Merges folders without overwriting files.', function() {
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
@@ -22,7 +24,6 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.log.ok('INSIDE');
     // Iterate over all specified file groups.
     this.files
         .filter(function(mapping) {
@@ -30,7 +31,7 @@ module.exports = function(grunt) {
             var goodSrc = true,
                 goodDest = grunt.file.isDir(mapping.dest);
             mapping.src.forEach(function noDirIn(path) {
-                if (grunt.file.isDir(path)) {
+                if (!grunt.file.isDir(path)) {
                     goodSrc = false;
                 }
             });
@@ -38,11 +39,14 @@ module.exports = function(grunt) {
         })
         .forEach(function(mapping) {
             mapping.src.forEach(function (srcPath) {
-            grunt.log.ok(JSON.stringify(mapping));
-                var label = this.options.label(srcPath);
-                grunt.log.ok('ROOT: ' + srcPath);
-                grunt.log.recurse(srcpath, function(abspath) {
+                var label = options.label(srcPath),
+                    mergeIndex = {};
+                grunt.file.recurse(srcPath, function mergeFiles(abspath,
+                        rootdir, subdir, filename) {
                     grunt.log.ok(abspath);
+                    grunt.log.ok(rootdir);
+                    grunt.log.ok(subdir);
+                    grunt.log.ok(filename);
                 });
             });
         });

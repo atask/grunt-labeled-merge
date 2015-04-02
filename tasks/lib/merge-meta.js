@@ -1,5 +1,6 @@
 var fileHash = require('./file-hash'),
-    join = require('path').join;
+    join = require('path').join,
+    Promise = require('core-js/library/es6/promise');
 
 module.exports = function(grunt) {
 
@@ -15,54 +16,57 @@ module.exports = function(grunt) {
         }
 
     return {
-        create: function create(dir) {
+        create: function create(dir, labelFunc) {
 
             var labels = [],
                 clashes = {},
                 fileLists = {},
+                destRootdir = dir,
+                labeler = labelFunc,
                 hasMeta = hasMeta(dir);
 
             if (hasMeta) {
-                labels = grunt.file.readJSON(dir, META_DIR, LABEL_FILE);
-                clashes = grunt.file.reaJSON(dir, META_DIR, CLASH_FILE);
+                labels = grunt.file.readJSON(destRootdir, META_DIR, LABEL_FILE);
+                clashes = grunt.file.reaJSON(destRootdir, META_DIR, CLASH_FILE);
             }
 
             return {
-                addFile: function addFile(fileStats, callback) {
-                    var label = fileStats.label,
-                        abspath = fileStats.abspath,
-                        subdir = fileStats.subdir,
-                        filename = fileStats.filename,
-                        relpath = join(subdir || '', filename),
-                        destPath = join(dir, relPath),
+                addFile: function addFile(srcAbspath, srcRootdir, srcSubdir,
+                         srcFilename, callback) {
+                    var srcLabel = labeler(srcRootdir),
+                        srcRelpath = join(srcSubdir || '', srcFilename),
+                        destAbspath = join(dir, srcRelpath),
                         matchList = [];
                     
                     // if label not defined, init index objects
-                    if (labels.indexOf(label) === -1) {
-                        labels.push(label);
-                        fileLists[label] = [];
+                    if (labels.indexOf(srcLabel) === -1) {
+                        labels.push(srcLabel);
+                        fileLists[srcLabel] = [];
                     }
                     
                     // if a collision is already recorded, the file must be
                     // checked against multiple destinations.
                     // if not, check if a dest is already present.
-                    if (relpath in clashes) {
-                        matchList = clashes[relpath];
+                    if (srcRelpath in clashes) {
+                        matchList = clashes[srcRelpath];
                     } else {
-                        if(grunt.file.isFile(destPath)) {
-                            matchList = [destPath];
+                        if(grunt.file.isFile(destAbspath)) {
+                            matchList = [destAbspath];
                         }
                     }
                     
-                    fileHash(abspath, function(err, hash) {
-                        if (err) {
-                            callback(err);
-                        }
-                        var isClash = matchList.some( function compareHash(hash) {
-                            
+                    if (matchList.length !== 0) {
+                        return fileHash.then(function
+                        var srcHash = fileHash(srcAbspath,
+                        fileHash(abspath, function(err, hash) {
+                            if (err) {
+                                callback(err);
+                            }
+                            var isClash = matchList.some( function compareHash(hash) {
+                                
+                            });
                         });
-                    });
-
+                    }
 
                 }
             }

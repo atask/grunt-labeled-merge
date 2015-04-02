@@ -4,13 +4,15 @@ var crypto = require('crypto'),
     // change the algo to sha1, sha256 etc according to your requirements
     algo = 'md5';
 
-module.exports = function fileHash(path, callback) {
+module.exports = function fileHash(path) {
     var shasum = crypto.createHash(algo),
-        s = fs.ReadStream(path);
-    s.on('error', callback(new Error('Read stream error')));
-    s.on('data', function(d) { shasum.update(d); });
-    s.on('end', function() {
-        var d = shasum.digest('hex');
-        callback(null, d);
-    });
+        stream = fs.ReadStream(path);
+    return new Promise(function calcHash(reject, resolve) {
+        stream.on('error', reject)
+              .on('data', function(d) { shasum.update(d); })
+                    \.on('end', function digest() {
+            var d = shasum.digest('hex');
+            resolve(d);
+        });
+    }
 }

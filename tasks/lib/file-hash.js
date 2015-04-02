@@ -6,9 +6,10 @@ var crypto = require('crypto'),
 module.exports = function fileHash(path, callback) {
     var shasum = crypto.createHash(algo),
         s = fs.ReadStream(path);
+    s.on('error', callback(new Error('Read stream error')));
     s.on('data', function(d) { shasum.update(d); });
     s.on('end', function() {
         var d = shasum.digest('hex');
-        return d;
+        callback(null, d);
     });
 }

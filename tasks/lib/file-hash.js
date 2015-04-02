@@ -1,5 +1,6 @@
 var crypto = require('crypto'),
     fs = require('fs'),
+    Promise = require('core-js/library/es6/promise'),
     // change the algo to sha1, sha256 etc according to your requirements
     algo = 'md5';
 

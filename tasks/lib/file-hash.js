@@ -10,7 +10,7 @@ module.exports = function fileHash(path) {
     return new Promise(function calcHash(reject, resolve) {
         stream.on('error', reject)
               .on('data', function(d) { shasum.update(d); })
-                    \.on('end', function digest() {
+              .on('end', function digest() {
             var d = shasum.digest('hex');
             resolve(d);
         });

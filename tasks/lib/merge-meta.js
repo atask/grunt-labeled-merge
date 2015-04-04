@@ -15,14 +15,29 @@ module.exports = function(grunt) {
             return (meta && labels && clashes);
         }
 
+    function labelFile(filename, label) {
+        var dotPos = filename.lastIndexOf('.');
+        if (dotPos !== -1 && dotPos !== 0) {
+            // file has extension
+            var newFilename = filename.substring(0, dotPos) + 
+                '.' + label + filename.substring(dotPos, filename.length);
+            destTestPath = destTestPath.replace(filename, newFilename);
+        } else {
+            // no extension
+            destTestPath += '.' + label;
+        }
+    }
+
     return {
-        create: function create(dir, labelFunc) {
+        create: function create(dir, labelFunc, renameFunc, copyFunc) {
 
             var labels = [],
                 clashes = {},
                 fileLists = {},
                 destRootdir = dir,
-                labeler = labelFunc,
+                labelDir = labelFunc,
+                queueFileRename = renameFunc,
+                queueFileCopy = copyFunc,
                 hasMeta = hasMeta(dir);
 
             if (hasMeta) {
@@ -33,7 +48,7 @@ module.exports = function(grunt) {
             return {
                 addFile: function addFile(srcAbspath, srcRootdir, srcSubdir,
                          srcFilename, callback) {
-                    var srcLabel = labeler(srcRootdir),
+                    var srcLabel = labelDir(srcRootdir),
                         srcRelpath = join(srcSubdir || '', srcFilename),
                         destAbspath = join(dir, srcRelpath),
                         matchList = [];
@@ -47,14 +62,26 @@ module.exports = function(grunt) {
                     // if a collision is already recorded, the file must be
                     // checked against multiple destinations.
                     // if not, check if a dest is already present.
-                    if (srcRelpath in clashes) {
-                        matchList = clashes[srcRelpath];
-                    } else {
-                        if(grunt.file.isFile(destAbspath)) {
-                            matchList = [destAbspath];
+                    return Promise.all([ 
+                        fileHash(srcAbspath),
+                        function getDestHashes() {
+                            if(srcRelpath in clashes) {
+                                return clashes[srcRelpath].map(function getHash(clash) {
+                                    return clash.hash;
+                                });
+                            }
+                            if(grunt.file.isFile(destAbspath)) {
+                                return fileHash(destAbspath)
+                                    .then(function formatHash(hash) {
+                                        return {}
+                                    });
+                            }
+                            return '';
                         }
-                    }
-                    
+                    }).then(function compareHashes(hashArray) {
+                        
+                    });
+
                     if (matchList.length !== 0) {
                         return fileHash.then(function
                         var srcHash = fileHash(srcAbspath,

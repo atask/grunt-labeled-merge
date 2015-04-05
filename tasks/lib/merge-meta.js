@@ -1,48 +1,50 @@
-var fileHash = require('./file-hash'),
-    join = require('path').join,
-    Promise = require('core-js/library/es6/promise');
+var getFileHash = require('./file-hash'),
+    join = require('path').join;
 
 module.exports = function(grunt) {
 
     var META_DIR = '.meta',
-        LABEL_FILE = 'labels.json',
-        CLASH_FILE = 'clashes.json';
+        LIST_FILE = 'files.json',
+        // a dot and 8 hex lowercase chars
+        FILE_ID_RE = /\.[\da-f]{8}/;
     
     function hasMeta(dir) {
             var meta = grunt.file.isDir(dir, META_DIR),
-                labels = grunt.file.isFile(dir, META_DIR, LABEL_FILE),
-                clashes = grunt.file.isFile(dir, META_DIR, CLASH_FILE);
-            return (meta && labels && clashes);
+                files = grunt.file.isFile(dir, META_DIR, LIST_FILE),
+            return (meta && files);
         }
 
-    function labelFile(filename, label) {
+    function hasFileId(filename) {
+        return FILE_ID_RE.test(filename);
+    }
+
+    function addFileId(filename, id) {
         var dotPos = filename.lastIndexOf('.');
         if (dotPos !== -1 && dotPos !== 0) {
             // file has extension
-            var newFilename = filename.substring(0, dotPos) + 
-                '.' + label + filename.substring(dotPos, filename.length);
-            destTestPath = destTestPath.replace(filename, newFilename);
+            return filename.substring(0, dotPos) + 
+                '.' + id + filename.substring(dotPos, filename.length);
         } else {
             // no extension
-            destTestPath += '.' + label;
+            return destTestPath + '.' + id;
         }
     }
 
-    return {
-        create: function create(dir, labelFunc, renameFunc, copyFunc) {
+    function removeFileId(filename) {
+        return filename.replace(FILE_ID_RE, '');
+    }
 
-            var labels = [],
-                clashes = {},
-                fileLists = {},
+    return {
+        create: function create(dir, labelFunc, copyFunc) {
+
+            var files = {},
                 destRootdir = dir,
                 labelDir = labelFunc,
-                queueFileRename = renameFunc,
                 queueFileCopy = copyFunc,
                 hasMeta = hasMeta(dir);
 
             if (hasMeta) {
-                labels = grunt.file.readJSON(destRootdir, META_DIR, LABEL_FILE);
-                clashes = grunt.file.reaJSON(destRootdir, META_DIR, CLASH_FILE);
+                files = grunt.file.readJSON(destRootdir, META_DIR, LIST_FILE);
             }
 
             return {
@@ -50,51 +52,37 @@ module.exports = function(grunt) {
                          srcFilename, callback) {
                     var srcLabel = labelDir(srcRootdir),
                         srcRelpath = join(srcSubdir || '', srcFilename),
-                        destAbspath = join(dir, srcRelpath),
-                        matchList = [];
-                    
-                    // if label not defined, init index objects
-                    if (labels.indexOf(srcLabel) === -1) {
-                        labels.push(srcLabel);
-                        fileLists[srcLabel] = [];
-                    }
-                    
-                    // if a collision is already recorded, the file must be
-                    // checked against multiple destinations.
-                    // if not, check if a dest is already present.
-                    return Promise.all([ 
-                        fileHash(srcAbspath),
-                        function getDestHashes() {
-                            if(srcRelpath in clashes) {
-                                return clashes[srcRelpath].map(function getHash(clash) {
-                                    return clash.hash;
-                                });
-                            }
-                            if(grunt.file.isFile(destAbspath)) {
-                                return fileHash(destAbspath)
-                                    .then(function formatHash(hash) {
-                                        return {}
-                                    });
-                            }
-                            return '';
-                        }
-                    }).then(function compareHashes(hashArray) {
-                        
-                    });
+                        srcHash;
 
-                    if (matchList.length !== 0) {
-                        return fileHash.then(function
-                        var srcHash = fileHash(srcAbspath,
-                        fileHash(abspath, function(err, hash) {
-                            if (err) {
-                                callback(err);
+                    function importFile() {
+                        var destAbspath = addFileId(
+                            join(destRootdir, srcRelpath),
+                            srcHash.slice(0,8)
+                        );
+                        queueFileCopy(srcAbspath, destAbspath);
+                    }
+
+                    return getFileHash(srcAbspath)
+                        .then(function manageFile(fileHash) {
+                            srcHash = fileHash;
+                            if (srcRelpath in files) {
+                                if (fileHash in files[srcRelpath]) {
+                                    files[srcRelpath].push(srcLabel);
+                                } else {
+                                    files[srcRelpath][fileHash] = [srcLabel];
+                                    importFile();
+                                }
+                            } else {
+                                files[srcRelpath] = {};
+                                files[srcRelpath][fileHash] = [srcLabel];
+                                importFile();
                             }
-                            var isClash = matchList.some( function compareHash(hash) {
-                                
-                            });
                         });
-                    }
+                },
 
+                close: function close() {
+                    grunt.file.write(join(destRootDir, META_DIR, LIST_FILE),
+                            JSON.stringify(files));
                 }
             }
 

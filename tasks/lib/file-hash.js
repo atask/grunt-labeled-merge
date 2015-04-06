@@ -14,5 +14,5 @@ module.exports = function fileHash(path) {
             var d = shasum.digest('hex');
             resolve(d);
         });
-    }
+    });
 }

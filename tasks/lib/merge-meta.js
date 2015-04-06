@@ -1,7 +1,6 @@
-var getFileHash = require('./file-hash'),
+var grunt = require('grunt'),
+    getFileHash = require('./file-hash'),
     join = require('path').join;
-
-module.exports = function(grunt) {
 
     var META_DIR = '.meta',
         LIST_FILE = 'files.json',
@@ -9,47 +8,49 @@ module.exports = function(grunt) {
         FILE_ID_RE = /\.[\da-f]{8}/;
     
     function hasMeta(dir) {
-            var meta = grunt.file.isDir(dir, META_DIR),
-                files = grunt.file.isFile(dir, META_DIR, LIST_FILE),
-            return (meta && files);
-        }
-
-    function hasFileId(filename) {
-        return FILE_ID_RE.test(filename);
+        var meta = grunt.file.isDir(dir, META_DIR),
+            files = grunt.file.isFile(dir, META_DIR, LIST_FILE);
+        return (meta && files);
     }
 
-    function addFileId(filename, id) {
-        var dotPos = filename.lastIndexOf('.');
-        if (dotPos !== -1 && dotPos !== 0) {
-            // file has extension
-            return filename.substring(0, dotPos) + 
-                '.' + id + filename.substring(dotPos, filename.length);
-        } else {
-            // no extension
-            return destTestPath + '.' + id;
-        }
-    }
-
-    function removeFileId(filename) {
-        return filename.replace(FILE_ID_RE, '');
-    }
-
-    return {
-        create: function create(dir, labelFunc, copyFunc) {
+    module.exports = {
+        create: function create(params) {
 
             var files = {},
-                destRootdir = dir,
-                labelDir = labelFunc,
-                queueFileCopy = copyFunc,
+                destRootdir = params.dir,
+                labelDir = params.labelFunc,
+                queueFileCopy = params.copyFunc,
                 hasMeta = hasMeta(dir);
+
+            function hasFileId(filename) {
+                return FILE_ID_RE.test(filename);
+            }
+
+            function addFileId(filename, id) {
+                var dotPos = filename.lastIndexOf('.');
+                if (dotPos !== -1 && dotPos !== 0) {
+                    // file has extension
+                    return filename.substring(0, dotPos) + 
+                        '.' + id + filename.substring(dotPos, filename.length);
+                } else {
+                    // no extension
+                    return destTestPath + '.' + id;
+                }
+            }
+
+            function removeFileId(filename) {
+                return filename.replace(FILE_ID_RE, '');
+            }
 
             if (hasMeta) {
                 files = grunt.file.readJSON(destRootdir, META_DIR, LIST_FILE);
+            } else {
+                grunt.file.mkdir(join(destRootdir, META_DIR));
             }
 
             return {
                 addFile: function addFile(srcAbspath, srcRootdir, srcSubdir,
-                         srcFilename, callback) {
+                         srcFilename) {
                     var srcLabel = labelDir(srcRootdir),
                         srcRelpath = join(srcSubdir || '', srcFilename),
                         srcHash;
@@ -90,5 +91,4 @@ module.exports = function(grunt) {
 
         hasMeta: hasMeta
 
-    };
 };

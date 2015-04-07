@@ -30,27 +30,10 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     labeled_merge: {
-      default_options: {
-        options: {
-        },
+      default_options_initial: {
         files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
+          'tmp/default_options_initial': ['test/fixtures/initial']
         }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      atask_opt: {
-        files: [{
-          src: 'tmp/lab1',
-          dest: 'tmp/destLab'
-        }]
       }
     },
 

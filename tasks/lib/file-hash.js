@@ -7,7 +7,7 @@ var crypto = require('crypto'),
 module.exports = function fileHash(path) {
     var shasum = crypto.createHash(algo),
         stream = fs.ReadStream(path);
-    return new Promise(function calcHash(reject, resolve) {
+    return new Promise(function calcHash(resolve, reject) {
         stream.on('error', reject)
               .on('data', function(d) { shasum.update(d); })
               .on('end', function digest() {

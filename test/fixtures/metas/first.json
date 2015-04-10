@@ -1,0 +1,23 @@
+{
+    "labels": ["default_options_initial"],
+    "files": {
+        ".subdir2/file6": {
+            "b15c153fbd09837316aae99af8f8feed": ["default_options_initial"]
+        },
+        "file1": {
+            "68dc8cd1b345080db413b266ee2e44a0": ["default_options_initial"]
+        },
+        "file2.txt": {
+            "6563acbb57e7d340e5ac4fd33b161df4": ["default_options_initial"]
+        },
+        "subdir/.file3.cfg": {
+            "ee5ae220bbb21fbbb7724141498dd9ab": ["default_options_initial"]
+        },
+        "subdir/file5": {
+            "c6b0c67ea05214aed0ee2b8c8a9b469d": ["default_options_initial"]
+        },
+        "subdir/subsubdir/file4": {
+            "37e3e3d1f2bdbcf098f8d75532531d5d": ["default_options_initial"]
+        }
+    }
+}

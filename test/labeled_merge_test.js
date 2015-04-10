@@ -23,62 +23,28 @@ var grunt = require('grunt'),
         test.ifError(value)
 */
 
-// list of initial test files with hashes
-var files = {
-    '.subdir2/file6': 'b15c153fbd09837316aae99af8f8feed',
-    'file1': '68dc8cd1b345080db413b266ee2e44a0',
-    'file2.txt': '6563acbb57e7d340e5ac4fd33b161df4',
-    'subdir/.file3.cfg': 'ee5ae220bbb21fbbb7724141498dd9ab',
-    'subdir/file5': 'c6b0c67ea05214aed0ee2b8c8a9b469d',
-    'subdir/subsubdir/file4': '37e3e3d1f2bdbcf098f8d75532531d5d'
-};
+exports.default_options = {
 
-// initial files.json
-var filesJson_initial = {
-    '.subdir2/file6': {
-        'b15c153fbd09837316aae99af8f8feed': ['default_options_initial']
-    },
-    'file1': {
-        '68dc8cd1b345080db413b266ee2e44a0': ['default_options_initial'],
-    },
-    'file2.txt': {
-        '6563acbb57e7d340e5ac4fd33b161df4': ['default_options_initial'],
-    },
-    'subdir/.file3.cfg': {
-        'ee5ae220bbb21fbbb7724141498dd9ab': ['default_options_initial'],
-    },
-    'subdir/file5': {
-        'c6b0c67ea05214aed0ee2b8c8a9b469d': ['default_options_initial'],
-    },
-    'subdir/subsubdir/file4': {
-        '37e3e3d1f2bdbcf098f8d75532531d5d': ['default_options_initial']
-    }
-};
-
-exports.labeled_merge = {
-
-    default_options_initial: function(test) {
-        var destDir = 'tmp/default_options_initial';
-
+    firstRun: function(test) {
+        var destDir = 'tmp/default_options_initial',
+            filesJson_first = grunt.file.readJSON(
+                    'test/fixtures/metas/first.json'));
         // test meta files
         test.equal(
             grunt.file.isDir(join(destDir, '.meta')),
             true,
             'Meta dir was not created'
         );
-        
         test.equal(
             grunt.file.isFile(join(destDir, '.meta/files.json')),
             true,
             'files.json was not created'
         );
-
         test.deepEqual(
             grunt.file.readJSON(join(destDir, '.meta/files.json')),
-            filesJson_initial,
+            filesJson_first,
             'files.json has wrong content'
         );
-
         // test added files
         Object.keys(files).forEach(function testFileExistence(testFile) {
             test.equal(
@@ -87,7 +53,55 @@ exports.labeled_merge = {
                 testFile + ' was not created'
             );
         });
+        test.done();
+    },
 
+    secondRun: function(test) {
+        var destDir = 'tmp/default_options_first',
+            filesJson_second = grunt.file.readJSON(
+                    'test/fixtures/metas/second.json'));
+        test.deepEqual(
+            grunt.file.readJSON(join(destDir, '.meta/files.json')),
+            filesJson_second,
+            'files.json has wrong content'
+        );
+        // test added and renamed files
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir','file7')),
+            true,
+            'subdir/file7 was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir','file5.c6b0c67e')),
+            true,
+            'subdir/file5.c6b0c67e was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir','file5.c6b0c67e')),
+            true,
+            'subdir/file5.32db936c was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'file2.6563acbb.txt')),
+            true,
+            'file2.6563acbb.txt was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'file2.488fca17.txt')),
+            true,
+            'file2.488fca17.txt was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir', '.file3.ee5ae220.cfg')),
+            true,
+            'subdir/file3.ee5ae220.cfg was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir', '.file3.f40a3f71.cfg')),
+            true,
+            'subdir/file3.f40a3f71.cfg was not created'
+        );
         test.done();
     }
+    
 };

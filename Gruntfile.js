@@ -28,11 +28,22 @@ module.exports = function(grunt) {
       tests: ['tmp']
     },
 
+    // Copy needed fixture files
+    copy: {
+      fixture: {
+        files: [
+          {expand: true, cwd: 'test/fixture/first/', src: ['**'], dest: 'tmp/default_options_initial/'},
+          'tmp/default_options_initial/.meta/files.json': 'test/fixtures/metas/first.json'
+        ]
+      }
+    },
+
     // Configuration to be run (and then tested).
     labeled_merge: {
-      default_options_initial: {
+      default_options: {
         files: {
-          'tmp/default_options_initial': ['test/fixtures/initial']
+            'tmp/default_options_initial': ['test/fixtures/first'],
+            'tmp/default_options_first': ['test/fixtures/second']
         }
       }
     },
@@ -50,11 +61,12 @@ module.exports = function(grunt) {
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
-  grunt.registerTask('test', ['clean', 'labeled_merge', 'nodeunit']);
+  grunt.registerTask('test', ['clean', 'copy:fixture', 'labeled_merge', 'nodeunit']);
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);

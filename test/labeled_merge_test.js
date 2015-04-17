@@ -1,7 +1,9 @@
 'use strict';
 
 var grunt = require('grunt'),
-    join = require('path').join;
+    join = require('path').join,
+    mergeMeta = require('tasks/lib/merge-meta'),
+    fakeHasher = require('test/stubs/file-hash');
 
 /*
     ======== A Handy Little Nodeunit Reference ========
@@ -103,5 +105,76 @@ exports.default_options = {
         );
         test.done();
     }
+};
+
+exports.failureDir = {
+
+    setUp: function(callback) {
+        grunt.file.mkdir('tmp/targetSource');
+        callback();
+    },
+
+    tearDown: function(callback) {
+        grunt.file.delete('tmp/targetSource');
+        callback();
+    },
+
+    failDir: function(test) {
+        test.throws(
+            function wrongDest() {
+                mergeMeta('test/fixtures/first/file1', 'test/fixtures/second');
+            },
+            'merge-meta did not throw on invalid destination'
+        );
+
+        test.throws(
+            function noExistsDest() {
+                mergeMeta('this/folder/does/not/exist', 'test/fixtures/second');
+            },
+            'merge-meta did not throw on inexistent destination'
+        );
+
+        test.throws(
+            function wrongSource() {
+                mergeMeta('tmp/targetSource', 'test/fixtures/first/file1');
+            },
+            'merge-meta did not throw on invalid source'
+        );
+
+        test.throws(
+            function noExistsSource() {
+                mergeMeta('tmp/targetSource', 'this/folder/does/not/exist');
+            },
+            'merge-meta did not throw on inexistent source'
+        );
+    }
     
+};
+
+exports.failureHash = {
+    
+    setUp: function(callback) {
+        grunt.file.copy('test/fixtures/first/file1', 'tmp/targetSource');
+        grunt.file.copy('test/fixtures/first/file1', 'tmp/targetDest');
+        callback();
+    },
+
+    tearDown: function(callback) {
+        grunt.file.delete('tmp/targetSource');
+        grunt.file.delete('tmp/targetDest');
+        callback();
+    },
+
+    failHash: function(test) {
+        // fakeHasher returns an incremental hash, so if merge-label isn't
+        // capable to create a proper filename it should blow up.
+        test.throws(
+            function wrongHash() {
+                mergeMeta('tmp/targetSource', 'tmp/targetDest', {
+                    doHash: fakeHasher
+                });
+            },
+            'merge-meta did not throw on invalid hash'
+        );
+    }
 };

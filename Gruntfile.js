@@ -33,7 +33,7 @@ module.exports = function(grunt) {
       fixture: {
         files: [
           {expand: true, cwd: 'test/fixture/first/', src: ['**'], dest: 'tmp/default_options_initial/'},
-          'tmp/default_options_initial/.meta/files.json': 'test/fixtures/metas/first.json'
+          {'tmp/default_options_initial/.meta/files.json': 'test/fixtures/metas/first.json'}
         ]
       }
     },

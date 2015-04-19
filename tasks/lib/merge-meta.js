@@ -98,6 +98,14 @@ var grunt = require('grunt'),
                 throw new Error('No new files from ' + src);
             }
 
+            // if combining hash in file name unluckily collides with
+            // another file, give up
+            toCopy.forEach(function testExists(absPath) {
+                if (grunt.file.exists(absPath)) {
+                    throw new Error('Generated file already exists: ' + absPath);
+                }
+            });
+
             // if we reached here, everything is ready for merge
             
             // save meta file

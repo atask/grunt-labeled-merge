@@ -1,9 +1,11 @@
 var path = require('path');
 
-module.exports = function dirLabel(path) {
+module.exports = function dirLabel(srcPath) {
+    'use strict'; 
+
     // as default label, use dir name
 
-    var nPath = path.normalize(path);
+    var nPath = path.normalize(srcPath);
 
     // regex matches 'subdir' in '/dir/subdir/' or '/dir/subdir'
     var dirNameRE = /\/([^\/]+)\/?$/;
@@ -12,4 +14,4 @@ module.exports = function dirLabel(path) {
     
     // return regex result
     return regexRes[1];
-}
+};

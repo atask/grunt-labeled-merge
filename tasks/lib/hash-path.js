@@ -1,6 +1,5 @@
-var path = require('path');
-
 module.exports = function dirLabel(path, hash) {
+    'use strict';
     // as default id, append the first 8 digits of the hash to the
     // file path, before the extension (if any)
     
@@ -14,4 +13,4 @@ module.exports = function dirLabel(path, hash) {
 
     // no extension
     return path + '.' + id;
-}
+};

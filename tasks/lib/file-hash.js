@@ -5,6 +5,7 @@ var crypto = require('crypto'),
     algo = 'md5';
 
 module.exports = function fileHash(path) {
+    'use strict';
     var shasum = crypto.createHash(algo),
         stream = fs.ReadStream(path);
     return new Promise(function calcHash(resolve, reject) {
@@ -15,4 +16,4 @@ module.exports = function fileHash(path) {
             resolve(d);
         });
     });
-}
+};

@@ -1,94 +1,107 @@
 var grunt = require('grunt'),
     getFileHash = require('./file-hash'),
+    getDirLabel = require('./dir-label'),
+    hashPath = require('./hash-path'),
     join = require('path').join;
 
     var META_DIR = '.meta',
-        LIST_FILE = 'files.json',
-        // a dot and 8 hex lowercase chars
-        FILE_ID_RE = /\.[\da-f]{8}/;
+        LIST_FILE = 'files.json';
     
-    function hasMeta(dir) {
-        var meta = grunt.file.isDir(dir, META_DIR),
-            files = grunt.file.isFile(dir, META_DIR, LIST_FILE);
-        return (meta && files);
-    }
-
     module.exports = {
-        create: function create(params) {
+        merge: function(dest, src, options) {
+            var getHash = options.getHash || getFileHash,
+                getLabel = options.getLabel || getDirLabel,
+                getFileId = options.getFileIf || hashPath;
 
-            var files = {},
-                destRootdir = params.dir,
-                labelDir = params.labelFunc,
-                queueFileCopy = params.copyFunc,
-                hasMeta = hasMeta(dir);
-
-            function hasFileId(filename) {
-                return FILE_ID_RE.test(filename);
+            // verify that dest and src are folders
+            if (!grunt.file.isDir(dest) {
+                throw new Error('Invalid dest folder');
+            }
+            if (!grunt.file.isDir(src) {
+                throw new Error('Invalid src folder');
             }
 
-            function addFileId(filename, id) {
-                var dotPos = filename.lastIndexOf('.');
-                if (dotPos !== -1 && dotPos !== 0) {
-                    // file has extension
-                    return filename.substring(0, dotPos) + 
-                        '.' + id + filename.substring(dotPos, filename.length);
-                } else {
-                    // no extension
-                    return destTestPath + '.' + id;
-                }
+            // get folder label
+            var label = getLabel(src);
+            if (typeof label !== 'string') {
+                throw new Error('Invalid label');
             }
 
-            function removeFileId(filename) {
-                return filename.replace(FILE_ID_RE, '');
+            // right now there is no support for merging folders
+            // with meta info
+            if (hasMeta(src)) {
+                throw new Error('Meta folder in ' + src);
             }
 
-            if (hasMeta) {
-                files = grunt.file.readJSON(destRootdir, META_DIR, LIST_FILE);
+            // test if meta is available
+            var metaPath = join(dest, META_DIR, LIST_FILE);
+            var files = {};
+            if (hasMeta(dest)) {
+                files = grunt.file.readJSON(metaPath);
             } else {
-                grunt.file.mkdir(join(destRootdir, META_DIR));
+                grunt.file.mkdir(join(dest, META_DIR));
             }
 
-            return {
-                addFile: function addFile(srcAbspath, srcRootdir, srcSubdir,
-                         srcFilename) {
-                    var srcLabel = labelDir(srcRootdir),
-                        srcRelpath = join(srcSubdir || '', srcFilename),
-                        srcHash;
+            // label must not already have been added
+            if (files.labels.indexOf(label) !== -1) {
+                throw new Error('Label already indexed');
+            }
 
-                    function importFile() {
-                        var destAbspath = addFileId(
-                            join(destRootdir, srcRelpath),
-                            srcHash.slice(0,8)
-                        );
-                        queueFileCopy(srcAbspath, destAbspath);
-                    }
+            // get file list
+            var srcFiles = glob.sync('**', {
+                cwd: src,
+                dot: true,
+                nodir: true
+            });
 
-                    return getFileHash(srcAbspath)
-                        .then(function manageFile(fileHash) {
-                            srcHash = fileHash;
-                            if (srcRelpath in files) {
-                                if (fileHash in files[srcRelpath]) {
-                                    files[srcRelpath].push(srcLabel);
-                                } else {
-                                    files[srcRelpath][fileHash] = [srcLabel];
-                                    importFile();
-                                }
-                            } else {
-                                files[srcRelpath] = {};
-                                files[srcRelpath][fileHash] = [srcLabel];
-                                importFile();
-                            }
+            // add files to meta index, marking them for copy when needed
+            var toCopy = [];
+            files.labels.push(label);
+            srcFiles.forEach(function addFile(relPath) {
+                var absPath = join(src, relPath);
+                getHash.then(function evalHash(hash) {
+                    if (relPath in files) {
+                        var hashMap = files[relPath];
+                        if (hash in hashMap) {
+                            // file with same hash already indexed, adding
+                            // label to list
+                            hashMap[hash].push(label);
+                        } else {
+                            // a new version of the file, add file and
+                            // update hash list
+                            hashMap[hash] = [label];
+                            toCopy.push({
+                                src: absPath,
+                                dest: getFileId(absPath, hash)
+                            });
+                        }
+                    } else {
+                        // file never indexed, add file and update
+                        // hash list
+                        files[relpath] = {};
+                        files[relpath][hash] = [label];
+                        toCopy.push({
+                            src: absPath,
+                            dest: getFileId(absPath, hash)
                         });
-                },
+                    }
+                });
+            });
 
-                close: function close() {
-                    grunt.file.write(join(destRootDir, META_DIR, LIST_FILE),
-                            JSON.stringify(files));
-                }
+            // right now, folders that don't provide new files
+            // are not welcomed
+            if (!toCopy.length) {
+                throw new Error('No new files from ' + src);
             }
 
-        },
-
-        hasMeta: hasMeta
-
-};
+            // if we reached here, everything is ready for merge
+            
+            // save meta file
+            grunt.file.write(metaPath, JSON.stringify(files));
+            
+            // copy new files
+            toCopy.forEach(function copyFile(mapping) {
+                grunt.file.copy(mapping.src, mapping.dest);
+            };
+        }
+    };

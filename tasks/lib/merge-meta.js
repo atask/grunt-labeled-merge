@@ -1,40 +1,41 @@
 var grunt = require('grunt'),
+    Promise = require('core-js/library/es6/promise'),
     glob = require('glob'),
     getFileHash = require('./file-hash'),
     getDirLabel = require('./dir-label'),
     hashPath = require('./hash-path'),
     join = require('path').join;
 
-    var META_DIR = '.meta',
-        LIST_FILE = 'files.json';
+var META_DIR = '.meta',
+    LIST_FILE = 'files.json';
     
-    module.exports = {
-        merge: function(dest, src, options) {
-            'use strict';
-
+module.exports = {
+    merge: function(dest, src, options) {
+        'use strict';
+        return new Promise( function mergePromise(resolve, reject) {
             var getHash = options.getHash || getFileHash,
                 getLabel = options.getLabel || getDirLabel,
                 getFileId = options.getFileIf || hashPath;
 
             // verify that dest and src are folders
             if (!grunt.file.isDir(dest)) {
-                throw new Error('Invalid dest folder');
+                reject(new Error('Invalid dest folder'));
             }
             if (!grunt.file.isDir(src)) {
-                throw new Error('Invalid src folder');
+                reject(new Error('Invalid src folder'));
             }
 
             // get folder label
             var label = getLabel(src);
             if (typeof label !== 'string') {
-                throw new Error('Invalid label');
+                reject(new Error('Invalid label'));
             }
 
             // right now there is no support for merging folders
             // with meta info
             var srcMeta = join(src, META_DIR, LIST_FILE);
             if (grunt.file.isDir(srcMeta)) {
-                throw new Error('Meta folder in ' + src);
+                reject(new Error('Meta folder in ' + src));
             }
 
             // test if meta is available
@@ -48,7 +49,7 @@ var grunt = require('grunt'),
 
             // label must not already have been added
             if (files.labels.indexOf(label) !== -1) {
-                throw new Error('Label already indexed');
+                reject(new Error('Label already indexed'));
             }
 
             // get file list
@@ -95,14 +96,14 @@ var grunt = require('grunt'),
             // right now, folders that don't provide new files
             // are not welcome
             if (!toCopy.length) {
-                throw new Error('No new files from ' + src);
+                reject(new Error('No new files from ' + src));
             }
 
             // if combining hash in file name unluckily collides with
             // another file, give up
             toCopy.forEach(function testExists(absPath) {
                 if (grunt.file.exists(absPath)) {
-                    throw new Error('Generated file already exists: ' + absPath);
+                    reject(new Error('Generated file already exists: ' + absPath));
                 }
             });
 
@@ -115,5 +116,8 @@ var grunt = require('grunt'),
             toCopy.forEach(function copyFile(mapping) {
                 grunt.file.copy(mapping.src, mapping.dest);
             });
-        }
-    };
+
+        resolve();
+        });
+    }
+};

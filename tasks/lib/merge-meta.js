@@ -15,7 +15,7 @@ module.exports = {
         return new Promise( function mergePromise(resolve, reject) {
             var getHash = options.getHash || getFileHash,
                 getLabel = options.getLabel || getDirLabel,
-                getFileId = options.getFileIf || hashPath;
+                getFileId = options.getFileId || hashPath;
 
             // verify that dest and src are folders
             if (!grunt.file.isDir(dest)) {

@@ -2,8 +2,8 @@
 
 var grunt = require('grunt'),
     join = require('path').join,
-    mergeMeta = require('tasks/lib/merge-meta'),
-    fakeHasher = require('test/stubs/file-hash');
+    mergeMeta = require('../tasks/lib/merge-meta'),
+    fakeHasher = require('./stubs/file-hash');
 
 /*
     ======== A Handy Little Nodeunit Reference ========
@@ -30,7 +30,7 @@ exports.default_options = {
         firstRun: function(test) {
             var destDir = 'tmp/default_options_initial',
                 filesJson_first = grunt.file.readJSON(
-                    'test/fixtures/metas/first.json'));
+                    'test/fixtures/metas/first.json');
         // test meta files
         test.equal(
             grunt.file.isDir(join(destDir, '.meta')),
@@ -48,7 +48,7 @@ exports.default_options = {
             'files.json has wrong content'
         );
         // test added files
-        Object.keys(files).forEach(function testFileExistence(testFile) {
+        Object.keys(filesJson_first.files).forEach(function testFileExistence(testFile) {
             test.equal(
                 grunt.file.isFile(join(destDir, testFile)),
                 true,
@@ -61,7 +61,7 @@ exports.default_options = {
     secondRun: function(test) {
         var destDir = 'tmp/default_options_first',
             filesJson_second = grunt.file.readJSON(
-                'test/fixtures/metas/second.json'));
+                'test/fixtures/metas/second.json');
 test.deepEqual(
     grunt.file.readJSON(join(destDir, '.meta/files.json')),
     filesJson_second,

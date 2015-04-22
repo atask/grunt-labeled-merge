@@ -32,7 +32,8 @@ module.exports = function(grunt) {
             fixture: {
                 files: [{
                     expand: true,
-                    cwd: 'test/fixture/first/',
+                    cwd: 'test/fixtures/first',
+                    dot: true,
                     src: ['**'],
                     dest: 'tmp/default_options_initial/'
                 }, {
@@ -44,10 +45,10 @@ module.exports = function(grunt) {
         // Configuration to be run (and then tested).
         labeled_merge: {
             default_options: {
-                files: {
-                    'tmp/default_options_initial': ['test/fixtures/first'],
-                    'tmp/default_options_first': ['test/fixtures/second']
-                }
+                files: [
+                    { dest: 'tmp/default_options_initial', src: ['test/fixtures/first'] },
+                    { dest: 'tmp/default_options_initial', src: ['test/fixtures/second'] }
+                ]
             }
         },
 

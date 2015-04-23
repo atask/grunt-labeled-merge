@@ -13,13 +13,15 @@ module.exports = {
     merge: function(dest, src, options) {
         'use strict';
         return new Promise( function mergePromise(resolve, reject) {
-            var getHash = options.getHash || getFileHash,
-                getLabel = options.getLabel || getDirLabel,
-                getFileId = options.getFileId || hashPath;
+            var getHash = options && options.getHash || getFileHash,
+                getLabel = options && options.getLabel || getDirLabel,
+                getFileId = options && options.getFileId || hashPath;
 
             // verify that dest and src are folders
-            if (!grunt.file.isDir(dest)) {
-                reject(new Error('Invalid dest folder'));
+            if (grunt.file.exists(dest)) {
+                if (!grunt.file.isDir(dest)) {
+                    reject(new Error('Invalid dest folder'));
+                }
             }
             if (!grunt.file.isDir(src)) {
                 reject(new Error('Invalid src folder'));
@@ -40,7 +42,10 @@ module.exports = {
 
             // test if meta is available
             var destMeta = join(dest, META_DIR, LIST_FILE);
-            var files = {};
+            var files = {
+                labels: [],
+                files: {}
+            };
             if (grunt.file.isDir(destMeta)) {
                 files = grunt.file.readJSON(destMeta);
             } else {
@@ -64,7 +69,7 @@ module.exports = {
             files.labels.push(label);
             srcFiles.forEach(function addFile(relPath) {
                 var absPath = join(src, relPath);
-                getHash.then(function evalHash(hash) {
+                getHash(absPath).then(function evalHash(hash) {
                     if (relPath in files) {
                         var hashMap = files[relPath];
                         if (hash in hashMap) {

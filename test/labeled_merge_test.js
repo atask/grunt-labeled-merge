@@ -59,7 +59,7 @@ exports.default_options = {
     },
 
     secondRun: function(test) {
-        var destDir = 'tmp/default_options_first',
+        var destDir = 'tmp/default_options_initial',
             filesJson_second = grunt.file.readJSON(
                 'test/fixtures/metas/second.json');
         test.deepEqual(

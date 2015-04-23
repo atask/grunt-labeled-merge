@@ -62,49 +62,49 @@ exports.default_options = {
         var destDir = 'tmp/default_options_first',
             filesJson_second = grunt.file.readJSON(
                 'test/fixtures/metas/second.json');
-test.deepEqual(
-    grunt.file.readJSON(join(destDir, '.meta/files.json')),
-    filesJson_second,
-    'files.json has wrong content'
-);
-// test added and renamed files
-test.equal(
-    grunt.file.isFile(join(destDir, 'subdir', 'file7')),
-    true,
-    'subdir/file7 was not created'
-);
-test.equal(
-    grunt.file.isFile(join(destDir, 'subdir', 'file5.c6b0c67e')),
-    true,
-    'subdir/file5.c6b0c67e was not created'
-);
-test.equal(
-    grunt.file.isFile(join(destDir, 'subdir', 'file5.c6b0c67e')),
-    true,
-    'subdir/file5.32db936c was not created'
-);
-test.equal(
-    grunt.file.isFile(join(destDir, 'file2.6563acbb.txt')),
-    true,
-    'file2.6563acbb.txt was not created'
-);
-test.equal(
-    grunt.file.isFile(join(destDir, 'file2.488fca17.txt')),
-    true,
-    'file2.488fca17.txt was not created'
-);
-test.equal(
-    grunt.file.isFile(join(destDir, 'subdir', '.file3.ee5ae220.cfg')),
-    true,
-    'subdir/file3.ee5ae220.cfg was not created'
-);
-test.equal(
-    grunt.file.isFile(join(destDir, 'subdir', '.file3.f40a3f71.cfg')),
-    true,
-    'subdir/file3.f40a3f71.cfg was not created'
-);
-test.done();
-}
+        test.deepEqual(
+            grunt.file.readJSON(join(destDir, '.meta/files.json')),
+            filesJson_second,
+            'files.json has wrong content'
+        );
+        // test added and renamed files
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir', 'file7')),
+            true,
+            'subdir/file7 was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir', 'file5.c6b0c67e')),
+            true,
+            'subdir/file5.c6b0c67e was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir', 'file5.c6b0c67e')),
+            true,
+            'subdir/file5.32db936c was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'file2.6563acbb.txt')),
+            true,
+            'file2.6563acbb.txt was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'file2.488fca17.txt')),
+            true,
+            'file2.488fca17.txt was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir', '.file3.ee5ae220.cfg')),
+            true,
+            'subdir/file3.ee5ae220.cfg was not created'
+        );
+        test.equal(
+            grunt.file.isFile(join(destDir, 'subdir', '.file3.f40a3f71.cfg')),
+            true,
+            'subdir/file3.f40a3f71.cfg was not created'
+        );
+        test.done();
+    }
 };
 
 exports.failureDir = {

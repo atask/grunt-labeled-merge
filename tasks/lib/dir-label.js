@@ -1,4 +1,5 @@
-var path = require('path');
+var path = require('path'),
+    verEx = require('verbal-expressions');
 
 module.exports = function dirLabel(srcPath) {
     'use strict'; 
@@ -6,9 +7,15 @@ module.exports = function dirLabel(srcPath) {
     // as default label, use dir name
 
     var nPath = path.normalize(srcPath);
-
-    // regex matches 'subdir' in '/dir/subdir/' or '/dir/subdir'
-    var dirNameRE = /\/([^\/]+)\/?$/;
+ 
+    // build a regex for matching 'subdir' in '/dir/subdir/' or '/dir/subdir'
+    var dirNameRE = verEx()
+        .find(path.sep)
+        .beginCapture()
+        .anythingBut(path.sep)
+        .endCapture()
+        .maybe(path.sep)
+        .endOfLine();
 
     var regexRes = dirNameRE.exec(nPath);
     

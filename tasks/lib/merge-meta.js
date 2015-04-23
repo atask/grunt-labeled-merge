@@ -35,7 +35,7 @@ module.exports = {
 
             // right now there is no support for merging folders
             // with meta info
-            var srcMeta = join(src, META_DIR, LIST_FILE);
+            var srcMeta = join(src, META_DIR);
             if (grunt.file.isDir(srcMeta)) {
                 reject(new Error('Meta folder in ' + src));
             }
@@ -46,7 +46,7 @@ module.exports = {
                 labels: [],
                 files: {}
             };
-            if (grunt.file.isDir(destMeta)) {
+            if (grunt.file.exists(destMeta)) {
                 files = grunt.file.readJSON(destMeta);
             } else {
                 grunt.file.mkdir(join(dest, META_DIR));

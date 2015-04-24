@@ -12,6 +12,15 @@ var META_DIR = '.meta',
 module.exports = {
     merge: function(dest, src, options) {
         'use strict';
+
+        var label;
+        var files = [];
+        var meta = {
+            labels: [],
+            files: {}
+        };
+        var toCopy = [];
+
         return new Promise( function mergePromise(resolve, reject) {
             var getHash = options && options.getHash || getFileHash,
                 getLabel = options && options.getLabel || getDirLabel,
@@ -28,7 +37,7 @@ module.exports = {
             }
 
             // get folder label
-            var label = getLabel(src);
+            label = getLabel(src);
             if (typeof label !== 'string') {
                 reject(new Error('Invalid label'));
             }
@@ -42,12 +51,8 @@ module.exports = {
 
             // test if meta is available
             var destMeta = join(dest, META_DIR, LIST_FILE);
-            var files = {
-                labels: [],
-                files: {}
-            };
             if (grunt.file.exists(destMeta)) {
-                files = grunt.file.readJSON(destMeta);
+                meta = grunt.file.readJSON(destMeta);
             } else {
                 grunt.file.mkdir(join(dest, META_DIR));
             }
@@ -58,43 +63,58 @@ module.exports = {
             }
 
             // get file list
-            var srcFiles = glob.sync('**', {
+            files = glob.sync('**', {
                 cwd: src,
                 dot: true,
                 nodir: true
+            }).map(function getStats(relPath) {
+                return {
+                    relSrc: relPath,
+                    src: join(src, relPath)
+                };
             });
 
+            resolve():
+        })
+
+        .then( function addHashInfo() {
+            return Promise.all(
+                files.map( function doHash(file) {
+                    return getHash(file.src);
+                })
+            ).then( function(hashList) {
+                files.forEach( function(file, index) {
+                    file.hash = hashList[index];
+                    file.dest = getFileId(file.src, hash);
+                });
+            });
+        })
+
+        .then( function evaluateFiles() {
             // add files to meta index, marking them for copy when needed
-            var toCopy = [];
-            files.labels.push(label);
-            srcFiles.forEach(function addFile(relPath) {
-                var absPath = join(src, relPath);
-                getHash(absPath).then(function evalHash(hash) {
-                    if (relPath in files) {
-                        var hashMap = files[relPath];
-                        if (hash in hashMap) {
-                            // file with same hash already indexed, adding
-                            // label to list
-                            hashMap[hash].push(label);
-                        } else {
-                            // a new version of the file, add file and
-                            // update hash list
-                            hashMap[hash] = [label];
-                            toCopy.push({
-                                src: absPath,
-                                dest: getFileId(absPath, hash)
-                            });
+            files.forEach( function (file) {
+                if (file.relSrc in meta.files) {
+                    var hashMap = meta.files[relPath];
+                    if (hash in hashMap) {
+                        // file with same hash already indexed, adding
+                        // label to list
+                        hashMap[file.hash].push(label);
+                    } else {
+                        // a new version of the file, add file and
+                        // update hash list
+                        hashMap[file.hash] = [label];
+                        toCopy.push(file);
                         }
                     } else {
                         // file never indexed, add file and update
                         // hash list
-                        files[relPath] = {};
-                        files[relPath][hash] = [label];
-                        toCopy.push({
-                            src: absPath,
-                            dest: getFileId(absPath, hash)
-                        });
+                        meta.files[file.relSrc] = {};
+                        files[file.relSrc][file.hash] = [label];
+                        toCopy.push(file);
                     }
+                });
+            })
+// TODO: RESTART FROM HERE!
                 });
             });
 
@@ -115,6 +135,7 @@ module.exports = {
             // if we reached here, everything is ready for merge
             
             // save meta file
+            files.labels.push(label);
             grunt.file.write(destMeta, JSON.stringify(files));
             
             // copy new files

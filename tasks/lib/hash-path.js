@@ -1,16 +1,17 @@
-module.exports = function dirLabel(path, hash) {
+var path = require('path');
+
+module.exports = function dirLabel(filePath, hash) {
     'use strict';
     // as default id, append the first 8 digits of the hash to the
     // file path, before the extension (if any)
     
-    var id = hash.slice(0, 8);
-    var dotPos = path.lastIndexOf('.');
-    if (dotPos !== -1 && dotPos !== 0) {
-        // file has extension
-        return path.substring(0, dotPos) +
-            '.' + id + path.substring(dotPos, path.length);
-    }
+    // get the filename
+    var fileName = path.basename(filePath);
+    
+    // evaluate how far from the end the id should be put
+    var targetPos = filePath.length - path.extname(fileName).length;
 
-    // no extension
-    return path + '.' + id;
+    var id = hash.slice(0, 8);
+    return filePath.substring(0, targetPos) +
+        '.' + id + filePath.substring(targetPos, path.length);
 };

@@ -13,6 +13,13 @@ module.exports = {
     merge: function(dest, src, options) {
         'use strict';
 
+        var getHash = options && options.getHash || getFileHash,
+            getLabel = options && options.getLabel || getDirLabel,
+            getFileId = options && options.getFileId || hashPath;
+
+        var destMeta = join(dest, META_DIR, LIST_FILE);
+        var srcMeta = join(src, META_DIR);
+
         var label;
         var files = [];
         var meta = {
@@ -22,10 +29,6 @@ module.exports = {
         var toCopy = [];
 
         return new Promise( function mergePromise(resolve, reject) {
-            var getHash = options && options.getHash || getFileHash,
-                getLabel = options && options.getLabel || getDirLabel,
-                getFileId = options && options.getFileId || hashPath;
-
             // verify that dest and src are folders
             if (grunt.file.exists(dest)) {
                 if (!grunt.file.isDir(dest)) {
@@ -44,13 +47,11 @@ module.exports = {
 
             // right now there is no support for merging folders
             // with meta info
-            var srcMeta = join(src, META_DIR);
             if (grunt.file.isDir(srcMeta)) {
                 reject(new Error('Meta folder in ' + src));
             }
 
             // test if meta is available
-            var destMeta = join(dest, META_DIR, LIST_FILE);
             if (grunt.file.exists(destMeta)) {
                 meta = grunt.file.readJSON(destMeta);
             } else {
@@ -58,7 +59,7 @@ module.exports = {
             }
 
             // label must not already have been added
-            if (files.labels.indexOf(label) !== -1) {
+            if (meta.labels.indexOf(label) !== -1) {
                 reject(new Error('Label already indexed'));
             }
 
@@ -74,7 +75,7 @@ module.exports = {
                 };
             });
 
-            resolve():
+            resolve();
         })
 
         .then( function addHashInfo() {
@@ -84,8 +85,9 @@ module.exports = {
                 })
             ).then( function(hashList) {
                 files.forEach( function(file, index) {
-                    file.hash = hashList[index];
-                    file.dest = getFileId(file.src, hash);
+                    var hash = hashList[index];
+                    file.hash = hash;
+                    file.dest = join(dest, getFileId(file.relSrc, hash));
                 });
             });
         })
@@ -94,8 +96,8 @@ module.exports = {
             // add files to meta index, marking them for copy when needed
             files.forEach( function (file) {
                 if (file.relSrc in meta.files) {
-                    var hashMap = meta.files[relPath];
-                    if (hash in hashMap) {
+                    var hashMap = meta.files[file.relSrc];
+                    if (file.hash in hashMap) {
                         // file with same hash already indexed, adding
                         // label to list
                         hashMap[file.hash].push(label);
@@ -104,20 +106,18 @@ module.exports = {
                         // update hash list
                         hashMap[file.hash] = [label];
                         toCopy.push(file);
-                        }
-                    } else {
-                        // file never indexed, add file and update
-                        // hash list
-                        meta.files[file.relSrc] = {};
-                        files[file.relSrc][file.hash] = [label];
-                        toCopy.push(file);
                     }
-                });
-            })
-// TODO: RESTART FROM HERE!
-                });
+                } else {
+                    // file never indexed, add file and update
+                    // hash list
+                    meta.files[file.relSrc] = {};
+                    meta.files[file.relSrc][file.hash] = [label];
+                    toCopy.push(file);
+                }
             });
+        })
 
+        .then( function() {
             // right now, folders that don't provide new files
             // are not welcome
             if (!toCopy.length) {
@@ -126,24 +126,25 @@ module.exports = {
 
             // if combining hash in file name unluckily collides with
             // another file, give up
-            toCopy.forEach(function testExists(absPath) {
-                if (grunt.file.exists(absPath)) {
-                    reject(new Error('Generated file already exists: ' + absPath));
+            toCopy.forEach(function testExists(file) {
+                if (grunt.file.exists(file.dest)) {
+                    reject(new Error('Generated file already exists: ' + file.dest));
                 }
             });
+        })
 
-            // if we reached here, everything is ready for merge
+        .then( function writeMerge() {
+            // if we reached here, everything is ready for merging
             
             // save meta file
-            files.labels.push(label);
-            grunt.file.write(destMeta, JSON.stringify(files));
+            meta.labels.push(label);
+            grunt.file.write(destMeta, JSON.stringify(meta));
             
             // copy new files
             toCopy.forEach(function copyFile(mapping) {
                 grunt.file.copy(mapping.src, mapping.dest);
             });
 
-        resolve();
         });
     }
 };

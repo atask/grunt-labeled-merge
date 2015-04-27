@@ -27,21 +27,6 @@ module.exports = function(grunt) {
             tests: ['tmp']
         },
 
-        // Copy needed fixture files
-        copy: {
-            fixture: {
-                files: [{
-                    expand: true,
-                    cwd: 'test/fixtures/first',
-                    dot: true,
-                    src: ['**'],
-                    dest: 'tmp/default_options_initial/'
-                }, {
-                    'tmp/default_options_initial/.meta/files.json': 'test/fixtures/metas/first.json'
-                }]
-            }
-        },
-
         // Configuration to be run (and then tested).
         labeled_merge: {
             default_options: {
@@ -70,7 +55,7 @@ module.exports = function(grunt) {
 
     // Whenever the "test" task is run, first clean the "tmp" dir, then run this
     // plugin's task(s), then test the result.
-    grunt.registerTask('test', ['clean', 'copy:fixture', 'labeled_merge', 'nodeunit']);
+    grunt.registerTask('test', ['clean', 'labeled_merge', 'nodeunit']);
 
     // By default, lint and run all tests.
     grunt.registerTask('default', ['jshint', 'test']);

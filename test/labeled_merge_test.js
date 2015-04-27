@@ -147,6 +147,8 @@ exports.failureDir = {
             },
             'merge-meta did not throw on inexistent source'
         );
+
+        test.done();
     }
 
 };
@@ -176,6 +178,8 @@ exports.failureHash = {
             },
             'merge-meta did not throw on invalid hash'
         );
+
+        test.done()
     }
 };
 

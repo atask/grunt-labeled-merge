@@ -16,7 +16,8 @@ module.exports = function(grunt) {
     // creation: http://gruntjs.com/creating-tasks
     
     grunt.registerMultiTask('labeled_merge', 'Merges folders without overwriting files.', function(done) {
-        var self = this;
+        var done = this.async(),
+            self = this;
         // Iterate over all specified file groups.
         this.files.forEach(function(mapping) {
             var mergePromises = mapping.src.map(function mergeDir(src) {
@@ -24,7 +25,7 @@ module.exports = function(grunt) {
             });
             Promise.all(mergePromises)
                 .then(done)
-                .catch(done);
+                .catch(grunt.fail);
         });
     });
 };

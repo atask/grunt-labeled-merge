@@ -19,24 +19,37 @@ module.exports = function(grunt) {
     grunt.registerMultiTask('labeled_merge', 'Merges folders without overwriting files.', function() {
         var done = this.async(),
             self = this,
+            flatMappings = [],
             currentPromise;
 
-        // Iterate over all specified file groups.
+        // flatten mappings
         this.files.forEach(function(mapping) {
             mapping.src.forEach(function(srcFolder) {
-                var srcPromise = mergeMeta.merge(mapping.dest, srcFolder, self.options);
-                debug(
-                    'Processing: ' + eol +
-                    '\t' + 'srcFolder :[' + srcFolder + ']' + eol +
-                    '\t' + 'mapping.dest :[' + mapping.dest + ']'
-                );
-                if (currentPromise) {
-                    currentPromise.then(function chainNextSrc() {
-                        return srcPromise;
-                    });
-                }
-                currentPromise = srcPromise;
+                flatMappings.push({
+                    src: srcFolder,
+                    dest: mapping.dest
+                });
             });
+        });
+
+        // Iterate over all available mappings, in order.
+        flatMappings.forEach(function(mapping) {
+            debug(
+                'Processing: ' + eol +
+                '\t' + 'mapping.src :[' + mapping.src+ ']' + eol +
+                '\t' + 'mapping.dest :[' + mapping.dest + ']'
+            );
+            if (!currentPromise) {
+                // start merges chain
+                currentPromise = mergeMeta.merge(mapping.dest, mapping.src, self.options);
+            } else {
+                // append next merge to the chain
+                currentPromise = currentPromise.then(function chainNextMapping() {
+                    var dest = mapping.dest,
+                        src = mapping.src;
+                    return mergeMeta.merge(dest, src, self.options);
+                });
+            }
         });
 
         currentPromise

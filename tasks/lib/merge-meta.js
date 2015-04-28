@@ -10,6 +10,8 @@ var grunt = require('grunt'),
 
 var META_DIR = '.meta',
     LIST_FILE = 'files.json';
+
+var LIST_IGNORE = ['.ds_store'];
     
 module.exports = {
     merge: function(dest, src, options) {
@@ -83,6 +85,15 @@ module.exports = {
                 cwd: src,
                 dot: true,
                 nodir: true
+            }).filter(function removeIgnored(relPath) {
+                // ignore system files
+                var match = LIST_IGNORE
+                    .some(function searchIgnoredFile(ignored) {
+                        return relPath
+                            .toLowerCase()
+                            .indexOf(ignored.toLowerCase()) !== -1;
+                    });
+                return !match;
             }).map(function getStats(relPath) {
                 return {
                     relSrc: relPath,

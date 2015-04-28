@@ -2,25 +2,25 @@
     "labels": ["first", "second"],
     "files": {
         ".subdir2/file6": {
-            "bc4091954f9e44303a9af8ad6eb017d6": ["first"]
+            "b15c153fbd09837316aae99af8f8feed": ["first"]
         },
         "file1": {
-            "1acdb46589d15b82d5e1a562ef36c669": ["first", "second"]
+            "68dc8cd1b345080db413b266ee2e44a0": ["first", "second"]
         },
         "file2.txt": {
-            "9ad15803d7f73cda5a771ab3a5a15790": ["first"],
+            "6563acbb57e7d340e5ac4fd33b161df4": ["first"],
             "6e1c8f9b2aec6854280ead20ba1265b2": ["second"]
         },
         "subdir/.file3.cfg": {
-            "8e4568b6f6136c7b8267ccec16cc1973": ["first"],
+            "ee5ae220bbb21fbbb7724141498dd9ab": ["first"],
             "17b96cf15610ec0275e1fe20cba49b7c": ["second"]
         },
         "subdir/file5": {
-            "9941b3a8ef3c4565aef648480f73f201": ["first"],
+            "c6b0c67ea05214aed0ee2b8c8a9b469d": ["first"],
             "a97194581041af0d2807c0dabcb2531e": ["second"]
         },
         "subdir/subsubdir/file4": {
-            "8ca493ccb747e9bffaaf8b723ec0a05e": ["first"]
+            "37e3e3d1f2bdbcf098f8d75532531d5d": ["first"]
         },
         "subdir/file7": {
             "7ac7e12941ddb040d90088229951be60": ["second"]

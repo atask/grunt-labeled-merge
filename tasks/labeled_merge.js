@@ -17,15 +17,25 @@ module.exports = function(grunt) {
     
     grunt.registerMultiTask('labeled_merge', 'Merges folders without overwriting files.', function() {
         var done = this.async(),
-            self = this;
+            self = this,
+            currentPromise;
+
         // Iterate over all specified file groups.
         this.files.forEach(function(mapping) {
-            var mergePromises = mapping.src.map(function mergeDir(src) {
-                return mergeMeta.merge(mapping.dest, src, self.options);
+            mapping.src.forEach(function(srcFolder) {
+                var srcPromise = mergeMeta.merge(mapping.dest, srcFolder, self.options);
+                if (currentPromise) {
+                    currentPromise.then(function chainNextSrc() {
+                        return srcPromise;
+                    });
+                }
+                currentPromise = srcPromise;
             });
-            Promise.all(mergePromises)
-                .then(done)
-                .catch(grunt.fail);
         });
+
+        currentPromise
+            .then(done)
+            .catch(grunt.fail);
+
     });
 };

@@ -32,7 +32,10 @@ module.exports = function(grunt) {
             default_options: {
                 files: [
                     { dest: 'tmp/default_options_initial', src: ['test/fixtures/first'] },
-                    { dest: 'tmp/default_options_initial', src: ['test/fixtures/second'] }
+                    { dest: 'tmp/default_options_two_pass', src: [
+                        'test/fixtures/first',
+                        'test/fixtures/second'
+                    ] }
                 ]
             }
         },

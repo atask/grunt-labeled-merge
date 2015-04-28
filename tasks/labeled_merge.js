@@ -9,7 +9,8 @@
 'use strict';
 
 var mergeMeta = require('./lib/merge-meta'),
-    Promise = require('core-js/library/es6/promise');
+    debug = require('debug')('labeled-merge'),
+    eol = require('os').EOL;
 
 module.exports = function(grunt) {
     // Please see the Grunt documentation for more information regarding task
@@ -24,6 +25,11 @@ module.exports = function(grunt) {
         this.files.forEach(function(mapping) {
             mapping.src.forEach(function(srcFolder) {
                 var srcPromise = mergeMeta.merge(mapping.dest, srcFolder, self.options);
+                debug(
+                    'Processing: ' + eol +
+                    '\t' + 'srcFolder :[' + srcFolder + ']' + eol +
+                    '\t' + 'mapping.dest :[' + mapping.dest + ']'
+                );
                 if (currentPromise) {
                     currentPromise.then(function chainNextSrc() {
                         return srcPromise;

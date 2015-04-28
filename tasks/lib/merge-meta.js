@@ -1,10 +1,12 @@
 var grunt = require('grunt'),
     Promise = require('core-js/library/es6/promise'),
+    debug = require('debug')('merge-meta'),
     glob = require('glob'),
     getFileHash = require('./file-hash'),
     getDirLabel = require('./dir-label'),
     hashPath = require('./hash-path'),
-    join = require('path').join;
+    join = require('path').join,
+    eol = require('os').EOL
 
 var META_DIR = '.meta',
     LIST_FILE = 'files.json';
@@ -12,6 +14,12 @@ var META_DIR = '.meta',
 module.exports = {
     merge: function(dest, src, options) {
         'use strict';
+
+        debug(
+            '- init' + eol +
+            '\t' + 'src: [' + src + ']' + eol +
+            '\t' + 'dest: [' + dest + ']'
+        );
 
         var getHash = options && options.getHash || getFileHash,
             getLabel = options && options.getLabel || getDirLabel,
@@ -29,6 +37,13 @@ module.exports = {
         var toCopy = [];
 
         return new Promise( function mergePromise(resolve, reject) {
+
+            debug(
+                '- preconditions' + eol +
+                '\t' + 'src: [' + src + ']' + eol +
+                '\t' + 'dest: [' + dest + ']'
+            );
+
             // verify that dest and src are folders
             if (grunt.file.exists(dest)) {
                 if (!grunt.file.isDir(dest)) {
@@ -79,6 +94,13 @@ module.exports = {
         })
 
         .then( function addHashInfo() {
+
+            debug(
+                '- addHashInfo' + eol +
+                '\t' + 'src: [' + src + ']' + eol +
+                '\t' + 'dest: [' + dest + ']'
+            );
+
             return Promise.all(
                 files.map( function doHash(file) {
                     return getHash(file.src);
@@ -93,6 +115,13 @@ module.exports = {
         })
 
         .then( function evaluateFiles() {
+
+            debug(
+                '- evaluateFiles' + eol +
+                '\t' + 'src: [' + src + ']' + eol +
+                '\t' + 'dest: [' + dest + ']'
+            );
+
             // add files to meta index, marking them for copy when needed
             files.forEach( function (file) {
                 if (file.relSrc in meta.files) {
@@ -118,6 +147,13 @@ module.exports = {
         })
 
         .then( function() {
+
+            debug(
+                '- postconditions' + eol +
+                '\t' + 'src: [' + src + ']' + eol +
+                '\t' + 'dest: [' + dest + ']'
+            );
+
             // right now, folders that don't provide new files
             // are not welcome
             if (!toCopy.length) {
@@ -134,6 +170,13 @@ module.exports = {
         })
 
         .then( function writeMerge() {
+
+            debug(
+                '- writeMerge' + eol +
+                '\t' + 'src: [' + src + ']' + eol +
+                '\t' + 'dest: [' + dest + ']'
+            );
+
             // if we reached here, everything is ready for merging
             
             // save meta file

@@ -3,7 +3,7 @@ var merger = require('../tasks/lib/merge-meta');
 var EventEmitter = require('events').EventEmitter;
 
 var dest = '../tmp/default_options_initial',
-    src = 'fixtures/first';
+    src = 'fixtures/second';
 
 merger.merge(dest, src)
     .then( function() {

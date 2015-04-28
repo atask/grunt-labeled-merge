@@ -30,7 +30,9 @@ exports.default_options = {
         firstRun: function(test) {
             var destDir = 'tmp/default_options_initial',
                 filesJson_first = grunt.file.readJSON(
-                    'test/fixtures/metas/first.json');
+                    'test/fixtures/metas/first.json'),
+                filesName_first = grunt.file.readJSON(
+                    'test/fixtures/metas/firstFiles.json');
         // test meta files
         test.equal(
             grunt.file.isDir(join(destDir, '.meta')),
@@ -48,7 +50,7 @@ exports.default_options = {
             'files.json has wrong content'
         );
         // test added files
-        Object.keys(filesJson_first.files).forEach(function testFileExistence(testFile) {
+        filesName_first.forEach(function testFileExistence(testFile) {
             test.equal(
                 grunt.file.isFile(join(destDir, testFile)),
                 true,

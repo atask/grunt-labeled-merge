@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     // Please see the Grunt documentation for more information regarding task
     // creation: http://gruntjs.com/creating-tasks
     
-    grunt.registerMultiTask('labeled_merge', 'Merges folders without overwriting files.', function(done) {
+    grunt.registerMultiTask('labeled_merge', 'Merges folders without overwriting files.', function() {
         var done = this.async(),
             self = this;
         // Iterate over all specified file groups.

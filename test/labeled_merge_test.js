@@ -179,7 +179,7 @@ exports.failureHash = {
             'merge-meta did not throw on invalid hash'
         );
 
-        test.done()
+        test.done();
     }
 };
 

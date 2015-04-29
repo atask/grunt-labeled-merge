@@ -57,6 +57,7 @@ exports.default_options = {
                 testFile + ' was not created'
             );
         });
+        test.expect(3 + filesName_first.length);
         test.done();
     },
 
@@ -79,6 +80,7 @@ exports.default_options = {
                 testFile + ' was not created'
             );
         });
+        test.expect(1 + filesName_second.length);
         test.done();
     }
 };
@@ -124,6 +126,7 @@ exports.failureDir = {
             'merge-meta did not throw on inexistent source'
         );
 
+        test.expect(4);
         test.done();
     }
 
@@ -155,6 +158,7 @@ exports.failureHash = {
             'merge-meta did not throw on invalid hash'
         );
 
+        test.expect(1);
         test.done();
     }
 };

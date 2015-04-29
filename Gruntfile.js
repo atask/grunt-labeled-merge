@@ -43,9 +43,38 @@ module.exports = function(grunt) {
         // Unit tests.
         nodeunit: {
             tests: ['test/*_test.js']
-        }
+        },
 
+        instrument: {
+            files: 'tasks/**/*.js',
+            options: {
+                lazy: true,
+                basePath: 'test/coverage/instrument/'
+            }
+        },
+        
+        storeCoverage: {
+            options: {
+                dir: 'test/coverage/reports'
+            }
+        },
+
+        makeReport: {
+            src: 'test/coverage/reports/**/*.json',
+            options: {
+                type: 'html',
+                dir: 'test/coverage/reports'
+            }
+        }
     });
+
+    // If available, load this plugin's instrumented task(s).
+    if (grunt.file.exists('test/coverage/instrument/')) {
+        grunt.loadTasks('test/coverage/instrument/tasks');
+        grunt.task.renameTask('labeled_merge', 'labeled_merge_instrument');
+        grunt.config('labeled_merge_instrument', 
+            grunt.config('labeled_merge'));
+    }
 
     // Actually load this plugin's task(s).
     grunt.loadTasks('tasks');
@@ -55,10 +84,13 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-nodeunit');
+    grunt.loadNpmTasks('grunt-istanbul');
 
     // Whenever the "test" task is run, first clean the "tmp" dir, then run this
     // plugin's task(s), then test the result.
     grunt.registerTask('test', ['clean', 'labeled_merge', 'nodeunit']);
+
+    grunt.registerTask('coverage', ['clean', 'labeled_merge_instrument', 'nodeunit', 'storeCoverage', 'makeReport']);
 
     // By default, lint and run all tests.
     grunt.registerTask('default', ['jshint', 'test']);

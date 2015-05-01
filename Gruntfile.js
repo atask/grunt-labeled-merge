@@ -11,6 +11,15 @@ module.exports = function(grunt) {
 
     // Project configuration.
     grunt.initConfig({
+        env: {
+            dev: {
+                MERGE_META_DIR: ''
+            },
+            coverage: {
+                MERGE_META_DIR: 'test/coverage/instrument'
+            }
+        },
+
         jshint: {
             all: [
                 'Gruntfile.js',
@@ -65,7 +74,18 @@ module.exports = function(grunt) {
                 type: 'html',
                 dir: 'test/coverage/reports'
             }
+        },
+
+        // Configure a mochaTest task 
+        mochaTest: {
+            test: {
+                options: {
+                    reporter: 'spec'
+                },
+                src: ['test/labeled_merge_test_mocha.js']
+            }
         }
+
     });
 
     // If available, load this plugin's instrumented task(s).
@@ -83,14 +103,16 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-nodeunit');
     grunt.loadNpmTasks('grunt-istanbul');
+    grunt.loadNpmTasks('grunt-env');
 
     // Whenever the "test" task is run, first clean the "tmp" dir, then run this
     // plugin's task(s), then test the result.
-    grunt.registerTask('test', ['clean', 'labeled_merge', 'nodeunit']);
+    grunt.registerTask('test', ['env:dev', 'clean', 'labeled_merge', 'nodeunit', 'mochaTest']);
 
-    grunt.registerTask('coverage', ['clean', 'labeled_merge_instrument', 'nodeunit', 'storeCoverage', 'makeReport']);
+    grunt.registerTask('coverage', ['env:coverage', 'clean', 'labeled_merge_instrument', 'nodeunit', 'mochaTest', 'storeCoverage', 'makeReport']);
 
     // By default, lint and run all tests.
     grunt.registerTask('default', ['jshint', 'test']);

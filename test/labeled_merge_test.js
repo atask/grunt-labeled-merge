@@ -85,53 +85,6 @@ exports.default_options = {
     }
 };
 
-exports.failureDir = {
-
-    setUp: function(callback) {
-        grunt.file.mkdir('tmp/targetSource');
-        callback();
-    },
-
-    tearDown: function(callback) {
-        grunt.file.delete('tmp/targetSource');
-        callback();
-    },
-
-    failDir: function(test) {
-        test.throws(
-            function wrongDest() {
-                mergeMeta('test/fixtures/first/file1', 'test/fixtures/second');
-            },
-            'merge-meta did not throw on invalid destination'
-        );
-
-        test.throws(
-            function noExistsDest() {
-                mergeMeta('this/folder/does/not/exist', 'test/fixtures/second');
-            },
-            'merge-meta did not throw on inexistent destination'
-        );
-
-        test.throws(
-            function wrongSource() {
-                mergeMeta('tmp/targetSource', 'test/fixtures/first/file1');
-            },
-            'merge-meta did not throw on invalid source'
-        );
-
-        test.throws(
-            function noExistsSource() {
-                mergeMeta('tmp/targetSource', 'this/folder/does/not/exist');
-            },
-            'merge-meta did not throw on inexistent source'
-        );
-
-        test.expect(4);
-        test.done();
-    }
-
-};
-
 exports.failureHash = {
 
     setUp: function(callback) {

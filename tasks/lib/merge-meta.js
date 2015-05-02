@@ -6,7 +6,7 @@ var grunt = require('grunt'),
     getDirLabel = require('./dir-label'),
     hashPath = require('./hash-path'),
     join = require('path').join,
-    eol = require('os').EOL
+    eol = require('os').EOL;
 
 var META_DIR = '.meta',
     LIST_FILE = 'files.json';
@@ -38,7 +38,7 @@ module.exports = {
         };
         var toCopy = [];
 
-        return new Promise( function mergePromise(resolve, reject) {
+        return new Promise( function mergePromise(resolve) {
 
             debug(
                 '- preconditions' + eol +
@@ -49,23 +49,23 @@ module.exports = {
             // verify that dest and src are folders
             if (grunt.file.exists(dest)) {
                 if (!grunt.file.isDir(dest)) {
-                    reject(new Error('Invalid dest folder'));
+                    throw new Error('Invalid dest folder');
                 }
             }
             if (!grunt.file.isDir(src)) {
-                reject(new Error('Invalid src folder'));
+                throw new Error('Invalid src folder');
             }
 
             // get folder label
             label = getLabel(src);
             if (typeof label !== 'string') {
-                reject(new Error('Invalid label'));
+                throw new Error('Invalid label');
             }
 
             // right now there is no support for merging folders
             // with meta info
             if (grunt.file.isDir(srcMeta)) {
-                reject(new Error('Meta folder in ' + src));
+                throw new Error('Meta folder in ' + src);
             }
 
             // test if meta is available
@@ -77,7 +77,7 @@ module.exports = {
 
             // label must not already have been added
             if (meta.labels.indexOf(label) !== -1) {
-                reject(new Error('Label already indexed'));
+                throw new Error('Label already indexed');
             }
 
             // get file list
@@ -168,14 +168,14 @@ module.exports = {
             // right now, folders that don't provide new files
             // are not welcome
             if (!toCopy.length) {
-                reject(new Error('No new files from ' + src));
+                throw new Error('No new files from ' + src);
             }
 
             // if combining hash in file name unluckily collides with
             // another file, give up
             toCopy.forEach(function testExists(file) {
                 if (grunt.file.exists(file.dest)) {
-                    reject(new Error('Generated file already exists: ' + file.dest));
+                    throw new Error('Generated file already exists: ' + file.dest);
                 }
             });
         })

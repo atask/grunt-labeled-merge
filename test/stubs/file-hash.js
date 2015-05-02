@@ -1,3 +1,4 @@
+'use strict';
 var Promise = require('core-js/library/es6/promise'),
     hashCounter= 0;
 
@@ -9,10 +10,8 @@ function pad(string, size) {
     return s;
 }
 
-module.exports = function fileHash(path) {
-    return new Promise(function fakeHash(resolve, reject) {
-        hashCounter += 1;
-        var hashHex = pad(hashCounter.toString(16), 32);
-        resolve(hashHex);
-    });
+module.exports = function fileHash() {
+    hashCounter += 1;
+    var hashHex = pad(hashCounter.toString(16), 32);
+    return Promise.resolve(hashHex);
 };
